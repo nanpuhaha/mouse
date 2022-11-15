@@ -78,7 +78,7 @@ def listen(queue):
 
     while True:
         time, type, code, value, device_id = device.read_event()
-        if type == EV_SYN or type == EV_MSC:
+        if type in [EV_SYN, EV_MSC]:
             continue
 
         event = None

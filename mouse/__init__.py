@@ -41,6 +41,7 @@ Then check the [API docs](https://github.com/boppreh/mouse#api) to see what feat
 - To avoid depending on X the Linux parts reads raw device files (`/dev/input/input*`) but this requries root.
 - Other applications, such as some games, may register hooks that swallow all key events. In this case `mouse` will be unable to report events.
 """
+
 # TODO
 # - infinite wait
 # - mouse.on_move
@@ -56,7 +57,7 @@ elif _platform.system() == 'Linux':
 elif _platform.system() == 'Darwin':
     from. import _darwinmouse as _os_mouse
 else:
-    raise OSError("Unsupported platform '{}'".format(_platform.system()))
+    raise OSError(f"Unsupported platform '{_platform.system()}'")
 
 from ._mouse_event import ButtonEvent, MoveEvent, WheelEvent, LEFT, RIGHT, MIDDLE, X, X2, UP, DOWN, DOUBLE
 from ._generic import GenericListener as _GenericListener
@@ -164,9 +165,13 @@ def on_button(callback, args=(), buttons=(LEFT, MIDDLE, RIGHT, X, X2), types=(UP
         types = (types,)
 
     def handler(event):
-        if isinstance(event, ButtonEvent):
-            if event.event_type in types and event.button in buttons:
-                callback(*args)
+        if (
+            isinstance(event, ButtonEvent)
+            and event.event_type in types
+            and event.button in buttons
+        ):
+            callback(*args)
+
     _listener.add_handler(handler)
     return handler
 

@@ -131,12 +131,12 @@ def list_devices_from_proc(type_name):
 
     devices = {}
     for name, handlers in re.findall(device_pattern, description, re.DOTALL):
-        path = '/dev/input/event' + re.search(r'event(\d+)', handlers).group(1)
+        path = '/dev/input/event' + re.search(r'event(\d+)', handlers)[1]
         if type_name in handlers:
             yield EventDevice(path)
 
 def list_devices_from_by_id(type_name):
-    for path in glob('/dev/input/by-id/*-event-' + type_name):
+    for path in glob(f'/dev/input/by-id/*-event-{type_name}'):
         yield EventDevice(path)
 
 def aggregate_devices(type_name):
@@ -149,17 +149,10 @@ def aggregate_devices(type_name):
     fake_device._input_file = uinput
     fake_device._output_file = uinput
 
-    # We don't aggregate devices from different sources to avoid
-    # duplicates.
-
-    devices_from_proc = list(list_devices_from_proc(type_name))
-    if devices_from_proc:
+    if devices_from_proc := list(list_devices_from_proc(type_name)):
         return AggregatedEventDevice(devices_from_proc, output=fake_device)
 
-    # breaks on mouse for virtualbox
-    # was getting /dev/input/by-id/usb-VirtualBox_USB_Tablet-event-mouse
-    devices_from_by_id = list(list_devices_from_by_id(type_name))
-    if devices_from_by_id:
+    if devices_from_by_id := list(list_devices_from_by_id(type_name)):
         return AggregatedEventDevice(devices_from_by_id, output=fake_device)
 
     # If no keyboards were found we can only use the fake device to send keys.
